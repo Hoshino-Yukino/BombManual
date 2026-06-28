@@ -1,0 +1,20 @@
+{
+  "name": "ktane-bomb-manual",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Keep Talking and Nobody Explodes — 拆弹手册 (zh-CN) 网页版 + 摩斯/密码交互解算器",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "astro build && wrangler pages deploy dist --project-name ktane-manual"
+  },
+  "dependencies": {
+    "astro": "^5.6.1"
+  },
+  "devDependencies": {
+    "wrangler": "^4.10.0"
+  },
+  "packageManager": "pnpm@9.12.0"
+}
