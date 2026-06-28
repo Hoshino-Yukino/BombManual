@@ -1,0 +1,27 @@
+---
+import Manual from '../../layouts/Manual.astro';
+import Keypad from '../../components/Keypad.astro';
+import MorseSolver from '../../components/MorseSolver.astro';
+import PasswordSolver from '../../components/PasswordSolver.astro';
+import { MODULES, CHAPTER_LABELS } from '../../data/modules';
+
+export function getStaticPaths() {
+  return MODULES.map((m) => ({ params: { slug: m.slug }, props: { module: m } }));
+}
+
+const { module } = Astro.props;
+---
+<Manual title={`${module.name} · 拆弹手册`} active={module.slug}>
+  <article class="module">
+    <div class="crumbs">{CHAPTER_LABELS[module.chapter]} · 第 {module.page} 页</div>
+    <h1>{module.name}<span class="en">{module.nameEn}</span></h1>
+    {module.flavor && <p class="flavor">{module.flavor}</p>}
+
+    <div class="body" set:html={module.body} />
+
+    {module.widget === 'keypad' && <Keypad />}
+    {module.widget === 'maze' && <img class="maze-img" src="/assets/maze.png" alt="九张迷宫图" />}
+    {module.widget === 'morse' && <MorseSolver />}
+    {module.widget === 'password' && <PasswordSolver />}
+  </article>
+</Manual>

@@ -1,0 +1,105 @@
+---
+import { MORSE_CODE } from '../data/morse';
+const refRows = Object.entries(MORSE_CODE).map(([k, v]) => ({
+  k: k.toUpperCase(),
+  v: v.replace(/\./g, '·').replace(/-/g, '−'),
+}));
+---
+<div class="solver" id="morse-solver">
+  <h3>⚡ 摩斯解算器</h3>
+
+  <label>① 敲入点划，逐字母解码（或直接在下方输入已知字母）</label>
+  <div class="morse-current" id="m-buf">·</div>
+  <div class="morse-decoded" id="m-preview"></div>
+  <div class="btn-row">
+    <button class="btn dot" data-sym=".">·</button>
+    <button class="btn dot" data-sym="-">−</button>
+    <button class="btn ghost" id="m-del">⌫ 退格</button>
+    <button class="btn" id="m-commit">＋ 加入字母</button>
+  </div>
+
+  <label>② 已解出的字母（可直接编辑）</label>
+  <input type="text" id="m-decoded" placeholder="例如 fl…" autocomplete="off" autocapitalize="off" spellcheck="false" />
+  <div class="btn-row"><button class="btn ghost" id="m-clear">清空</button></div>
+
+  <div class="result-list" id="m-results"></div>
+
+  <details style="margin-top:14px">
+    <summary style="cursor:pointer;color:var(--muted)">摩斯电码参考表</summary>
+    <div class="morse-ref">
+      {refRows.map((r) => <span><b>{r.k}</b> {r.v}</span>)}
+    </div>
+  </details>
+</div>
+
+<script>
+  import { MORSE_WORDS, MORSE_REVERSE } from '../data/morse';
+
+  const root = document.getElementById('morse-solver')!;
+  const bufEl = root.querySelector<HTMLElement>('#m-buf')!;
+  const preEl = root.querySelector<HTMLElement>('#m-preview')!;
+  const decEl = root.querySelector<HTMLInputElement>('#m-decoded')!;
+  const resEl = root.querySelector<HTMLElement>('#m-results')!;
+
+  let buf = '';
+
+  const pretty = (s: string) => s.replace(/\./g, '·').replace(/-/g, '−') || '·';
+
+  function renderBuf() {
+    bufEl.textContent = pretty(buf);
+    const letter = MORSE_REVERSE[buf];
+    preEl.textContent = buf ? (letter ? `→ ${letter.toUpperCase()}` : '→ ？（无此码）') : '';
+  }
+
+  function renderResults() {
+    const q = decEl.value.trim().toLowerCase();
+    const matches = MORSE_WORDS.filter((w) => w.word.startsWith(q));
+    if (!q) {
+      resEl.innerHTML = '<div class="empty">敲入或输入字母以筛选（共 16 个候选单词）。</div>';
+      return;
+    }
+    if (matches.length === 0) {
+      resEl.innerHTML = '<div class="empty">无匹配单词，请检查解码。</div>';
+      return;
+    }
+    const hit = matches.length === 1;
+    resEl.innerHTML = matches
+      .map(
+        (m) =>
+          `<div class="result-row ${hit ? 'hit' : ''}"><span class="w">${m.word}</span><span class="f">${m.mhz} MHz</span></div>`,
+      )
+      .join('');
+  }
+
+  root.querySelectorAll<HTMLButtonElement>('[data-sym]').forEach((b) =>
+    b.addEventListener('click', () => {
+      buf += b.dataset.sym;
+      renderBuf();
+    }),
+  );
+  root.querySelector('#m-del')!.addEventListener('click', () => {
+    buf = buf.slice(0, -1);
+    renderBuf();
+  });
+  root.querySelector('#m-commit')!.addEventListener('click', () => {
+    const letter = MORSE_REVERSE[buf];
+    if (letter) {
+      decEl.value += letter;
+      buf = '';
+      renderBuf();
+      renderResults();
+    } else {
+      bufEl.animate([{ color: '#ff4d4d' }, { color: '' }], { duration: 500 });
+    }
+  });
+  root.querySelector('#m-clear')!.addEventListener('click', () => {
+    decEl.value = '';
+    buf = '';
+    renderBuf();
+    renderResults();
+  });
+  decEl.addEventListener('input', renderResults);
+
+  renderBuf();
+  renderResults();
+</script>

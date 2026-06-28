@@ -1,0 +1,11 @@
+---
+import { KEYPAD_COLUMNS, keypadSrc } from '../data/keypad';
+---
+<div class="keypad-cols">
+  {KEYPAD_COLUMNS.map((col, i) => (
+    <div class="keypad-col">
+      <div class="h">第 {i + 1} 列</div>
+      {col.map((n) => <img src={keypadSrc(n)} alt={`符号 ${n}`} loading="lazy" />)}
+    </div>
+  ))}
+</div>

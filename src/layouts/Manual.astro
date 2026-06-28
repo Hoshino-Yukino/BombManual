@@ -1,0 +1,65 @@
+---
+import '../styles/global.css';
+import { MODULES, CHAPTER_LABELS, type Chapter } from '../data/modules';
+
+interface Props {
+  title: string;
+  active?: string; // 当前模块 slug
+  withNav?: boolean;
+}
+const { title, active, withNav = true } = Astro.props;
+
+const chapters: Chapter[] = ['ch1', 'ch2', 'appendix'];
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="《保持交流就没人爆炸》拆弹手册 zh-CN 网页版，含摩斯电码与密码模块交互解算器。" />
+    <meta name="theme-color" content="#0e1116" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="bar">
+        <a class="brand" href="/">
+          <span class="dot"></span>
+          <span>拆弹手册 <small>KTANE · zh-CN</small></span>
+        </a>
+        {withNav && <button class="nav-toggle" id="navToggle" aria-label="目录">☰ 目录</button>}
+      </div>
+    </header>
+
+    <div class={`layout ${withNav ? 'with-nav' : ''}`}>
+      {withNav && (
+        <nav class="sidenav" id="sidenav">
+          {chapters.map((ch) => (
+            <div>
+              <h4>{CHAPTER_LABELS[ch]}</h4>
+              {MODULES.filter((m) => m.chapter === ch).map((m) => (
+                <a href={`/modules/${m.slug}`} class={m.slug === active ? 'active' : ''}>{m.name}</a>
+              ))}
+            </div>
+          ))}
+        </nav>
+      )}
+      <main>
+        <slot />
+      </main>
+    </div>
+
+    <footer class="site-footer">
+      内容来源：《Keep Talking and Nobody Explodes》拆弹手册 zh-CN v1（验证码 931）。仅供学习查阅。
+    </footer>
+
+    <script>
+      const t = document.getElementById('navToggle');
+      const n = document.getElementById('sidenav');
+      t?.addEventListener('click', () => n?.classList.toggle('open'));
+      n?.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).tagName === 'A') n.classList.remove('open');
+      });
+    </script>
+  </body>
+</html>
