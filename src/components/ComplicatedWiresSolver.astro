@@ -1,0 +1,82 @@
+---
+// 复杂线路交互解算器：选这根线的特征 + 炸弹整体状态 → 剪 / 不剪。
+---
+<div class="solver" id="cw-solver">
+  <h3>🔌 复杂线路解算器</h3>
+
+  <label>① 这根线的特征</label>
+  <div class="toggle-row">
+    <button class="toggle" data-k="red">线有<span class="chip red">红</span>色</button>
+    <button class="toggle" data-k="blue">线有<span class="chip blue">蓝</span>色</button>
+    <button class="toggle" data-k="star">带 ★ 标记</button>
+    <button class="toggle" data-k="led">LED 点亮</button>
+  </div>
+
+  <label>② 炸弹整体状态（决定 S / P / B 是否剪断）</label>
+  <div class="toggle-row">
+    <button class="toggle" data-k="serialEven">序列号末位偶数</button>
+    <button class="toggle" data-k="parallel">有 Parallel 端口</button>
+    <button class="toggle" data-k="batt2">≥2 个电池</button>
+  </div>
+
+  <div class="btn-row"><button class="btn ghost" id="cw-clear">↺ 一键清空</button></div>
+  <div class="cw-result" id="cw-result"></div>
+  <div class="cw-reason" id="cw-reason"></div>
+</div>
+
+<script>
+  import { COMPLICATED } from '../data/complicated';
+
+  const root = document.getElementById('cw-solver')!;
+  const resEl = root.querySelector<HTMLElement>('#cw-result')!;
+  const reaEl = root.querySelector<HTMLElement>('#cw-reason')!;
+
+  const state: Record<string, boolean> = {
+    red: false, blue: false, star: false, led: false,
+    serialEven: false, parallel: false, batt2: false,
+  };
+
+  function render() {
+    const key = `${+state.red}${+state.blue}${+state.star}${+state.led}`;
+    const instr = COMPLICATED[key];
+    let cut = false;
+    let reason = '';
+    switch (instr) {
+      case 'C': cut = true; reason = 'C — 直接剪断'; break;
+      case 'D': cut = false; reason = 'D — 不要剪断'; break;
+      case 'S':
+        cut = state.serialEven;
+        reason = `S — 序列号末位${state.serialEven ? '为偶数 → 剪断' : '为奇数 → 不剪'}`;
+        break;
+      case 'P':
+        cut = state.parallel;
+        reason = `P — ${state.parallel ? '有 Parallel 端口 → 剪断' : '无 Parallel 端口 → 不剪'}`;
+        break;
+      case 'B':
+        cut = state.batt2;
+        reason = `B — ${state.batt2 ? '电池 ≥2 → 剪断' : '电池 <2 → 不剪'}`;
+        break;
+    }
+    resEl.textContent = cut ? '✂️ 剪断' : '✋ 不要剪断';
+    resEl.className = `cw-result ${cut ? 'cut' : 'keep'}`;
+    reaEl.textContent = `指令 ${reason}`;
+  }
+
+  const toggles = root.querySelectorAll<HTMLButtonElement>('.toggle');
+  toggles.forEach((b) =>
+    b.addEventListener('click', () => {
+      const k = b.dataset.k!;
+      state[k] = !state[k];
+      b.classList.toggle('on', state[k]);
+      render();
+    }),
+  );
+
+  root.querySelector('#cw-clear')!.addEventListener('click', () => {
+    for (const k in state) state[k] = false;
+    toggles.forEach((b) => b.classList.remove('on'));
+    render();
+  });
+
+  render();
+</script>

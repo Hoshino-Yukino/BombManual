@@ -3,6 +3,7 @@ import Manual from '../../layouts/Manual.astro';
 import Keypad from '../../components/Keypad.astro';
 import MorseSolver from '../../components/MorseSolver.astro';
 import PasswordSolver from '../../components/PasswordSolver.astro';
+import ComplicatedWiresSolver from '../../components/ComplicatedWiresSolver.astro';
 import { MODULES, CHAPTER_LABELS } from '../../data/modules';
 
 export function getStaticPaths() {
@@ -10,6 +11,8 @@ export function getStaticPaths() {
 }
 
 const { module } = Astro.props;
+const w = module.widget;
+const isSolver = w === 'morse' || w === 'password' || w === 'complicated';
 ---
 <Manual title={`${module.name} · 拆弹手册`} active={module.slug}>
   <article class="module">
@@ -17,11 +20,22 @@ const { module } = Astro.props;
     <h1>{module.name}<span class="en">{module.nameEn}</span></h1>
     {module.flavor && <p class="flavor">{module.flavor}</p>}
 
-    <div class="body" set:html={module.body} />
-
-    {module.widget === 'keypad' && <Keypad />}
-    {module.widget === 'maze' && <img class="maze-img" src="/assets/maze.png" alt="九张迷宫图" />}
-    {module.widget === 'morse' && <MorseSolver />}
-    {module.widget === 'password' && <PasswordSolver />}
+    {isSolver ? (
+      <Fragment>
+        {w === 'morse' && <MorseSolver />}
+        {w === 'password' && <PasswordSolver />}
+        {w === 'complicated' && <ComplicatedWiresSolver />}
+        <details class="manual-fold">
+          <summary>📖 查看完整手册说明</summary>
+          <div class="body" set:html={module.body} />
+        </details>
+      </Fragment>
+    ) : (
+      <Fragment>
+        <div class="body" set:html={module.body} />
+        {w === 'keypad' && <Keypad />}
+        {w === 'maze' && <img class="maze-img" src="/assets/maze.png" alt="九张迷宫图" />}
+      </Fragment>
+    )}
   </article>
 </Manual>

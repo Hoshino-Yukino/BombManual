@@ -2,7 +2,7 @@
 // body 为规则 HTML；widget 标记交互/特殊渲染模块。
 
 export type Chapter = 'ch1' | 'ch2' | 'appendix';
-export type Widget = 'morse' | 'password' | 'keypad' | 'maze' | null;
+export type Widget = 'morse' | 'password' | 'keypad' | 'maze' | 'complicated' | null;
 
 export interface Module {
   slug: string;
@@ -271,8 +271,7 @@ export const MODULES: Module[] = [
 <ul>
   <li>短亮 = <b>点 ·</b>；长亮 = <b>划 −</b>。</li>
   <li>字母之间有较长间隔；单词重复之前有<b>非常长</b>的间隔。信号循环播放。</li>
-</ul>
-<p>下方解算器：敲入你解出的点划或直接输入字母，自动匹配单词与频率。</p>`,
+</ul>`,
     widget: 'morse',
   },
   {
@@ -316,6 +315,7 @@ export const MODULES: Module[] = [
   <li><b>P</b> — 炸弹有 <b>Parallel</b> 端口则剪断</li>
   <li><b>B</b> — 炸弹有<b>两个或更多</b>电池则剪断</li>
 </ul>`,
+    widget: 'complicated',
   },
   {
     slug: 'wire-sequences',
@@ -377,8 +377,7 @@ export const MODULES: Module[] = [
     page: 16,
     flavor: '22 个字符、大小写混合、随机插入数字……幸好不是这个模块的密码要求。',
     body: `
-<p>每个字母上下方的两个按钮用于切换该位字符。可用的字母里只有<b>一种组合</b>能对应下表中的某个单词，拼出后按提交按钮。</p>
-<p>下方解算器：把每一位<b>能循环到的字母</b>都填进去，自动找出唯一匹配的单词。</p>`,
+<p>每个字母上下方的两个按钮用于切换该位字符。可用的字母里只有<b>一种组合</b>能对应下表中的某个单词，拼出后按提交按钮。</p>`,
     widget: 'password',
   },
 

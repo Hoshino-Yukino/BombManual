@@ -163,6 +163,33 @@ kbd { font-family: ui-monospace, Menlo, monospace; font-size: .85em; background:
 .result-row .f { font-family: ui-monospace, Menlo, monospace; color: var(--accent-2); }
 .solver .empty { color: var(--muted); font-size: 14px; }
 
+/* 折叠手册（解算器模块） */
+.manual-fold { margin-top: 22px; border-top: 1px solid var(--line); padding-top: 8px; }
+.manual-fold > summary {
+  cursor: pointer; list-style: none; color: var(--muted); font-size: 15px;
+  padding: 8px 4px; display: flex; align-items: center; gap: 6px;
+}
+.manual-fold > summary::-webkit-details-marker { display: none; }
+.manual-fold > summary::after { content: '▸'; margin-left: auto; transition: transform .15s; }
+.manual-fold[open] > summary::after { transform: rotate(90deg); }
+.manual-fold > summary:hover { color: var(--text); }
+.manual-fold .body { margin-top: 8px; }
+
+/* complicated wires toggles */
+.toggle-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 14px; }
+.toggle {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--bg-2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 999px; padding: 8px 14px; font-size: 15px; cursor: pointer; user-select: none;
+}
+.toggle::before { content: '○'; color: var(--muted); }
+.toggle.on { border-color: var(--accent-2); background: rgba(46,160,67,.16); }
+.toggle.on::before { content: '●'; color: var(--accent-2); }
+.cw-result { font-size: 28px; font-weight: 800; text-align: center; margin: 14px 0 4px; min-height: 36px; }
+.cw-result.cut { color: var(--accent); }
+.cw-result.keep { color: var(--accent-2); }
+.cw-reason { text-align: center; color: var(--muted); font-size: 14px; }
+
 /* password wheels */
 .pw-wheels { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .pw-wheels .wheel label { text-align: center; }
