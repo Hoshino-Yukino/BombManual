@@ -152,6 +152,7 @@ a:hover { text-decoration: underline; }
 .btn.dot { min-width: 44px; font-size: 20px; }
 .btn.ghost { color: var(--muted); }
 
+kbd { font-family: ui-monospace, Menlo, monospace; font-size: .85em; background: var(--bg-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; color: var(--text); }
 .morse-current { font-family: ui-monospace, Menlo, monospace; font-size: 22px; min-height: 28px; letter-spacing: .15em; color: var(--chip-yellow); }
 .morse-decoded { font-size: 18px; letter-spacing: .2em; margin: 6px 0; }
 

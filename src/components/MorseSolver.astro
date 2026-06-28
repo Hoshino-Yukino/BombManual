@@ -8,7 +8,7 @@ const refRows = Object.entries(MORSE_CODE).map(([k, v]) => ({
 <div class="solver" id="morse-solver">
   <h3>⚡ 摩斯解算器</h3>
 
-  <label>① 敲入点划，逐字母解码（或直接在下方输入已知字母）</label>
+  <label>① 敲入点划，逐字母解码（键盘 <kbd>.</kbd>=点 <kbd>-</kbd>=划 <kbd>空格/回车</kbd>=加入字母）</label>
   <div class="morse-current" id="m-buf">·</div>
   <div class="morse-decoded" id="m-preview"></div>
   <div class="btn-row">
@@ -18,8 +18,8 @@ const refRows = Object.entries(MORSE_CODE).map(([k, v]) => ({
     <button class="btn" id="m-commit">＋ 加入字母</button>
   </div>
 
-  <label>② 已解出的字母（可直接编辑）</label>
-  <input type="text" id="m-decoded" placeholder="例如 fl…" autocomplete="off" autocapitalize="off" spellcheck="false" />
+  <label>② 已解出的字母（连续片段即可，无需从首字母开始）</label>
+  <input type="text" id="m-decoded" placeholder="例如 ect…" autocomplete="off" autocapitalize="off" spellcheck="false" />
   <div class="btn-row"><button class="btn ghost" id="m-clear">清空</button></div>
 
   <div class="result-list" id="m-results"></div>
@@ -52,8 +52,9 @@ const refRows = Object.entries(MORSE_CODE).map(([k, v]) => ({
   }
 
   function renderResults() {
-    const q = decEl.value.trim().toLowerCase();
-    const matches = MORSE_WORDS.filter((w) => w.word.startsWith(q));
+    const q = decEl.value.trim().toLowerCase().replace(/[^a-z]/g, '');
+    // 连续子串匹配：解出的字母片段出现在单词任意位置即命中。
+    const matches = MORSE_WORDS.filter((w) => w.word.includes(q));
     if (!q) {
       resEl.innerHTML = '<div class="empty">敲入或输入字母以筛选（共 16 个候选单词）。</div>';
       return;
@@ -77,11 +78,11 @@ const refRows = Object.entries(MORSE_CODE).map(([k, v]) => ({
       renderBuf();
     }),
   );
-  root.querySelector('#m-del')!.addEventListener('click', () => {
+  function del() {
     buf = buf.slice(0, -1);
     renderBuf();
-  });
-  root.querySelector('#m-commit')!.addEventListener('click', () => {
+  }
+  function commit() {
     const letter = MORSE_REVERSE[buf];
     if (letter) {
       decEl.value += letter;
@@ -91,7 +92,10 @@ const refRows = Object.entries(MORSE_CODE).map(([k, v]) => ({
     } else {
       bufEl.animate([{ color: '#ff4d4d' }, { color: '' }], { duration: 500 });
     }
-  });
+  }
+
+  root.querySelector('#m-del')!.addEventListener('click', del);
+  root.querySelector('#m-commit')!.addEventListener('click', commit);
   root.querySelector('#m-clear')!.addEventListener('click', () => {
     decEl.value = '';
     buf = '';
@@ -99,6 +103,16 @@ const refRows = Object.entries(MORSE_CODE).map(([k, v]) => ({
     renderResults();
   });
   decEl.addEventListener('input', renderResults);
+
+  // 物理键盘：. = 点，- = 划，空格/回车 = 加入字母，退格 = 删除点划。
+  // 焦点在字母输入框时不拦截，让用户正常打字。
+  document.addEventListener('keydown', (e) => {
+    if (e.target === decEl) return;
+    if (e.key === '.') { e.preventDefault(); buf += '.'; renderBuf(); }
+    else if (e.key === '-' || e.key === '_') { e.preventDefault(); buf += '-'; renderBuf(); }
+    else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); commit(); }
+    else if (e.key === 'Backspace' && buf) { e.preventDefault(); del(); }
+  });
 
   renderBuf();
   renderResults();
