@@ -1,0 +1,72 @@
+---
+// 顺序线路解算器：每色一个 +/− 计数器，直接显示当前这根线接哪个接点要剪断。
+---
+<div class="solver" id="ws-solver">
+  <h3>🔢 顺序线路解算器</h3>
+  <p class="ws-hint">每遇到一根线就给对应颜色按 <b>＋</b>，右侧直接显示这根线<b>接到哪个接点要剪断</b>。</p>
+
+  <div class="ws-steppers">
+    <div class="ws-stepper" data-c="red">
+      <span class="chip red">红</span>
+      <button class="btn step" data-act="dec">−</button>
+      <b class="ws-n">0</b>
+      <button class="btn step" data-act="inc">＋</button>
+      <span class="ws-cut">—</span>
+    </div>
+    <div class="ws-stepper" data-c="blue">
+      <span class="chip blue">蓝</span>
+      <button class="btn step" data-act="dec">−</button>
+      <b class="ws-n">0</b>
+      <button class="btn step" data-act="inc">＋</button>
+      <span class="ws-cut">—</span>
+    </div>
+    <div class="ws-stepper" data-c="black">
+      <span class="chip black">黑</span>
+      <button class="btn step" data-act="dec">−</button>
+      <b class="ws-n">0</b>
+      <button class="btn step" data-act="inc">＋</button>
+      <span class="ws-cut">—</span>
+    </div>
+  </div>
+
+  <div class="btn-row"><button class="btn ghost" id="ws-reset">↺ 全部清零</button></div>
+</div>
+
+<script>
+  import { SEQUENCES, type SeqColor } from '../data/sequences';
+
+  const root = document.getElementById('ws-solver')!;
+  const counts: Record<SeqColor, number> = { red: 0, blue: 0, black: 0 };
+
+  function render(color: SeqColor) {
+    const row = root.querySelector<HTMLElement>(`.ws-stepper[data-c="${color}"]`)!;
+    const n = counts[color];
+    row.querySelector('.ws-n')!.textContent = String(n);
+    const cutEl = row.querySelector<HTMLElement>('.ws-cut')!;
+    if (n < 1) {
+      cutEl.textContent = '—';
+      cutEl.className = 'ws-cut';
+    } else {
+      const letters = SEQUENCES[color][n - 1];
+      cutEl.innerHTML = `接 <b>${letters.join(' / ')}</b> 剪断`;
+      cutEl.className = 'ws-cut active';
+    }
+  }
+
+  root.querySelectorAll<HTMLButtonElement>('.ws-stepper .step').forEach((b) =>
+    b.addEventListener('click', () => {
+      const row = b.closest<HTMLElement>('.ws-stepper')!;
+      const color = row.dataset.c as SeqColor;
+      const delta = b.dataset.act === 'inc' ? 1 : -1;
+      counts[color] = Math.min(9, Math.max(0, counts[color] + delta));
+      render(color);
+    }),
+  );
+
+  root.querySelector('#ws-reset')!.addEventListener('click', () => {
+    (Object.keys(counts) as SeqColor[]).forEach((c) => {
+      counts[c] = 0;
+      render(c);
+    });
+  });
+</script>

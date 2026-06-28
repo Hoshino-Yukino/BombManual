@@ -175,6 +175,16 @@ kbd { font-family: ui-monospace, Menlo, monospace; font-size: .85em; background:
 .manual-fold > summary:hover { color: var(--text); }
 .manual-fold .body { margin-top: 8px; }
 
+/* 顺序线路解算器 */
+.ws-hint { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+.ws-steppers { display: flex; flex-direction: column; gap: 10px; }
+.ws-stepper { display: grid; grid-template-columns: auto auto 2.2em auto 1fr; gap: 10px; align-items: center; background: var(--bg-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.ws-stepper .step { min-width: 42px; font-size: 20px; padding: 4px 0; }
+.ws-stepper .ws-n { font-size: 22px; text-align: center; font-variant-numeric: tabular-nums; }
+.ws-cut { color: var(--muted); font-size: 15px; }
+.ws-cut.active { color: var(--accent); }
+.ws-cut.active b { font-size: 18px; }
+
 /* 键盘解算器 */
 .kp-palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; margin: 6px 0 12px; }
 .kp-sym { background: #fff; border: 2px solid var(--line); border-radius: 10px; padding: 6px; cursor: pointer; transition: border-color .12s, transform .08s; }

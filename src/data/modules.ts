@@ -2,7 +2,7 @@
 // body 为规则 HTML；widget 标记交互/特殊渲染模块。
 
 export type Chapter = 'ch1' | 'ch2' | 'appendix';
-export type Widget = 'morse' | 'password' | 'keypad' | 'maze' | 'complicated' | null;
+export type Widget = 'morse' | 'password' | 'keypad' | 'maze' | 'complicated' | 'sequences' | null;
 
 export interface Module {
   slug: string;
@@ -353,6 +353,7 @@ export const MODULES: Module[] = [
   </tbody>
 </table>
 </div>`,
+    widget: 'sequences',
   },
   {
     slug: 'maze',

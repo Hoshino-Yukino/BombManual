@@ -5,6 +5,7 @@ import KeypadSolver from '../../components/KeypadSolver.astro';
 import MorseSolver from '../../components/MorseSolver.astro';
 import PasswordSolver from '../../components/PasswordSolver.astro';
 import ComplicatedWiresSolver from '../../components/ComplicatedWiresSolver.astro';
+import WireSequencesSolver from '../../components/WireSequencesSolver.astro';
 import { MODULES, CHAPTER_LABELS } from '../../data/modules';
 
 export function getStaticPaths() {
@@ -13,7 +14,7 @@ export function getStaticPaths() {
 
 const { module } = Astro.props;
 const w = module.widget;
-const isSolver = w === 'morse' || w === 'password' || w === 'complicated' || w === 'keypad';
+const isSolver = w === 'morse' || w === 'password' || w === 'complicated' || w === 'keypad' || w === 'sequences';
 ---
 <Manual title={`${module.name} · 拆弹手册`} active={module.slug}>
   <article class="module">
@@ -26,6 +27,7 @@ const isSolver = w === 'morse' || w === 'password' || w === 'complicated' || w =
         {w === 'morse' && <MorseSolver />}
         {w === 'password' && <PasswordSolver />}
         {w === 'complicated' && <ComplicatedWiresSolver />}
+        {w === 'sequences' && <WireSequencesSolver />}
         {w === 'keypad' && <KeypadSolver />}
         <details class="manual-fold">
           <summary>📖 查看完整手册说明</summary>
