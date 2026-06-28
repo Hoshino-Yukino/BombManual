@@ -1,0 +1,92 @@
+---
+import { KEYPAD_COLUMNS, keypadSrc } from '../data/keypad';
+// 全部唯一符号
+const uniq = [...new Set(KEYPAD_COLUMNS.flat())].sort((a, b) => a - b);
+---
+<div class="solver" id="kp-solver">
+  <h3>⌨️ 键盘解算器</h3>
+  <label>① 点选键盘上显示的 4 个符号</label>
+  <div class="kp-palette">
+    {uniq.map((n) => (
+      <button class="kp-sym" data-n={n} aria-label={`符号 ${n}`}>
+        <img src={keypadSrc(n)} alt={`符号 ${n}`} loading="lazy" />
+      </button>
+    ))}
+  </div>
+  <div class="btn-row"><button class="btn ghost" id="kp-clear">↺ 一键清空</button></div>
+
+  <label>② 按此顺序按下</label>
+  <div class="kp-answer" id="kp-answer"></div>
+  <div class="cw-reason" id="kp-reason"></div>
+</div>
+
+<script>
+  import { KEYPAD_COLUMNS, keypadSrc } from '../data/keypad';
+
+  const root = document.getElementById('kp-solver')!;
+  const ansEl = root.querySelector<HTMLElement>('#kp-answer')!;
+  const reaEl = root.querySelector<HTMLElement>('#kp-reason')!;
+  const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('.kp-sym'));
+  const MAX = 4;
+  const selected = new Set<number>();
+
+  function render() {
+    const sel = [...selected];
+    if (sel.length === 0) {
+      ansEl.innerHTML = '<div class="empty">选择符号后，自动锁定所在列并给出按压顺序。</div>';
+      reaEl.textContent = '';
+      return;
+    }
+    // 找出包含全部所选符号的列
+    const cols = KEYPAD_COLUMNS
+      .map((c, i) => ({ i, c }))
+      .filter(({ c }) => sel.every((n) => c.includes(n)));
+
+    if (cols.length === 0) {
+      ansEl.innerHTML = '<div class="empty">这些符号不在同一列，请检查选择。</div>';
+      reaEl.textContent = '';
+      return;
+    }
+    if (cols.length > 1) {
+      ansEl.innerHTML = '<div class="empty">继续选择以锁定唯一一列…</div>';
+      reaEl.textContent = `当前候选列：第 ${cols.map((x) => x.i + 1).join(' / ')} 列`;
+      return;
+    }
+    // 唯一一列：按该列从上到下顺序排列所选符号
+    const col = cols[0].c;
+    const order = sel.slice().sort((a, b) => col.indexOf(a) - col.indexOf(b));
+    ansEl.innerHTML = order
+      .map(
+        (n, idx) =>
+          `<div class="kp-step"><span class="badge">${idx + 1}</span><img src="${keypadSrc(n)}" alt="符号 ${n}" /></div>`,
+      )
+      .join('');
+    reaEl.textContent = `已锁定第 ${cols[0].i + 1} 列，按上图顺序按下。`;
+  }
+
+  buttons.forEach((b) => {
+    const n = Number(b.dataset.n);
+    b.addEventListener('click', () => {
+      if (selected.has(n)) {
+        selected.delete(n);
+        b.classList.remove('on');
+      } else {
+        if (selected.size >= MAX) {
+          b.animate([{ transform: 'translateX(-3px)' }, { transform: 'translateX(3px)' }, { transform: 'translateX(0)' }], { duration: 180 });
+          return;
+        }
+        selected.add(n);
+        b.classList.add('on');
+      }
+      render();
+    });
+  });
+
+  root.querySelector('#kp-clear')!.addEventListener('click', () => {
+    selected.clear();
+    buttons.forEach((b) => b.classList.remove('on'));
+    render();
+  });
+
+  render();
+</script>
