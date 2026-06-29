@@ -30,8 +30,21 @@ const uniq = [...new Set(KEYPAD_COLUMNS.flat())].sort((a, b) => a - b);
   const MAX = 4;
   const selected = new Set<number>();
 
+  // 自动筛选：只保留还能与已选符号同列的按钮，其余禁用
+  function applyFilter(sel: number[]) {
+    const candidateCols = KEYPAD_COLUMNS.filter((c) => sel.every((n) => c.includes(n)));
+    const available = new Set<number>();
+    candidateCols.forEach((c) => c.forEach((n) => available.add(n)));
+    buttons.forEach((b) => {
+      const n = Number(b.dataset.n);
+      // 已选中的始终可点（用于取消选择），其余按是否仍可同列决定
+      b.disabled = !selected.has(n) && !available.has(n);
+    });
+  }
+
   function render() {
     const sel = [...selected];
+    applyFilter(sel);
     if (sel.length === 0) {
       ansEl.innerHTML = '<div class="empty">选择符号后，自动锁定所在列并给出按压顺序。</div>';
       reaEl.textContent = '';
