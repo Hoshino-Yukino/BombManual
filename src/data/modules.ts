@@ -447,7 +447,9 @@ X X X · X</pre></figure>
     chapter: 'appendix',
     page: 21,
     body: `
-<p>带标签的指示灯可在炸弹侧面找到。常见标记：</p>
+<p>带标签的指示灯可在炸弹侧面找到。</p>
+<img class="appendix-fig" src="/assets/appendix/indicators.png" alt="指示灯示意图" loading="lazy" />
+<p>常见标记：</p>
 <p class="codes">SND · CLR · CAR · IND · FRQ · SIG · NSA · MSA · TRN · BOB · FRK</p>`,
   },
   {
@@ -458,7 +460,7 @@ X X X · X</pre></figure>
     page: 22,
     body: `
 <p>一般类型的电池可在炸弹侧面的电池槽位找到。类型：</p>
-<p class="codes">AA · D</p>`,
+<img class="appendix-fig" src="/assets/appendix/batteries.png" alt="电池类型表" loading="lazy" />`,
   },
   {
     slug: 'ports',
@@ -468,7 +470,7 @@ X X X · X</pre></figure>
     page: 23,
     body: `
 <p>数字端口和模拟信号端口一般在炸弹侧面外壳上。类型：</p>
-<p class="codes">DVI-D · Parallel · PS/2 · RJ-45 · Serial · Stereo RCA</p>`,
+<img class="appendix-fig" src="/assets/appendix/ports.png" alt="端口类型表" loading="lazy" />`,
   },
 ];
 

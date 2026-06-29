@@ -136,6 +136,7 @@ a:hover { text-decoration: underline; }
 
 /* ---------- 迷宫 ---------- */
 .maze-img { width: 100%; max-width: 560px; display: block; margin: 12px auto; background: #fff; border-radius: 10px; padding: 10px; }
+.appendix-fig { display: block; width: 100%; max-width: 380px; margin: 14px 0; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,.3); }
 
 /* ---------- 解算器 ---------- */
 .solver { margin-top: 18px; background: var(--bg-3); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
