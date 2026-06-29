@@ -17,7 +17,7 @@ const { module } = Astro.props;
 const w = module.widget;
 const isSolver = w === 'morse' || w === 'password' || w === 'complicated' || w === 'keypad' || w === 'sequences' || w === 'maze';
 ---
-<Manual title={`${module.name} · 拆弹手册`} active={module.slug}>
+<Manual title={`${module.name} · 简单易懂拆弹手册`} active={module.slug}>
   <article class="module">
     <div class="crumbs">{CHAPTER_LABELS[module.chapter]} · 第 {module.page} 页</div>
     <h1>{module.name}<span class="en">{module.nameEn}</span></h1>
