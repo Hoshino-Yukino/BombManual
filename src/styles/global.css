@@ -197,6 +197,51 @@ kbd { font-family: ui-monospace, Menlo, monospace; font-size: .85em; background:
 .kp-step img { width: 100%; height: 100%; object-fit: contain; }
 .kp-step .badge { position: absolute; top: -8px; left: -8px; background: var(--accent-2); color: #fff; font-size: 12px; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; }
 
+/* 迷宫解算器 */
+.mz-modes { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+.mz-mode { background: var(--bg-2); color: var(--text); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; font-size: 14px; cursor: pointer; }
+.mz-mode.on { background: var(--accent-2); color: #fff; border-color: var(--accent-2); }
+.mz-mode:disabled { opacity: .4; cursor: not-allowed; }
+.mz-count { font-weight: 700; }
+.mz-hint { font-size: 14px; color: var(--muted); margin: 6px 0 10px; }
+.mz-grid {
+  display: grid; grid-template-columns: repeat(6, 1fr); grid-template-rows: repeat(6, 1fr);
+  width: min(440px, 100%); aspect-ratio: 1;
+  gap: 4px; padding: 10px;
+  background: var(--bg-3); border: 3px solid var(--line); border-radius: 12px;
+  box-shadow: inset 0 0 24px rgba(0,0,0,.45); margin: 6px 0 14px;
+}
+.mz-cell {
+  position: relative; border: none; border-radius: 7px; padding: 0; cursor: pointer;
+  background-color: var(--bg);
+  /* 中心钉点：空格也清晰可见 */
+  background-image: radial-gradient(circle at center, #5b6b80 0 3.5px, transparent 4px);
+  display: grid; place-items: center; line-height: 1;
+  min-width: 0; min-height: 0; overflow: visible;
+  font-size: clamp(16px, 5vw, 26px);
+  transition: background-color .1s, box-shadow .1s;
+}
+.mz-cell:hover { background-color: var(--bg-2); }
+.mz-cell.on-path {
+  background-color: rgba(46,160,67,.22);
+  background-image: radial-gradient(circle at center, var(--accent-2) 0 3.5px, transparent 4px);
+}
+/* 墙：亮色粗条，铺在格间缝隙里，向下/右多伸 4px 让转角相连 */
+.mz-cell.wr::after { content: ''; position: absolute; top: 0; bottom: -4px; right: -4px; width: 4px; background: #e6edf3; border-radius: 2px; z-index: 5; }
+.mz-cell.wb::before { content: ''; position: absolute; left: 0; right: -4px; bottom: -4px; height: 4px; background: #e6edf3; border-radius: 2px; z-index: 5; }
+.mz-cell .g { position: relative; z-index: 4; font-weight: 800; }
+/* 标记 */
+.mz-cell.mk-circle { background-image: none; box-shadow: inset 0 0 0 2px #16a34a; }
+.mz-cell.mk-start { background-color: #11233f; background-image: none; box-shadow: inset 0 0 0 2px #2563eb, 0 0 14px rgba(37,99,235,.6); }
+.mz-cell.mk-goal { background-color: #3a1414; background-image: none; box-shadow: inset 0 0 0 2px #dc2626, 0 0 14px rgba(220,38,38,.6); }
+.mz-cell .g.circ { color: #22c55e; }
+.mz-cell .g.start { color: #60a5fa; }
+.mz-cell .g.goal { color: #f87171; }
+.mz-answer { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 40px; }
+.mz-step { display: inline-flex; align-items: baseline; gap: 3px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 9px; font-size: 14px; }
+.mz-step b { font-size: 18px; color: var(--accent-2); }
+.mz-arrow { color: var(--muted); }
+
 /* complicated wires toggles */
 .toggle-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 14px; }
 .toggle {

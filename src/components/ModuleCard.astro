@@ -2,7 +2,7 @@
 import type { Module } from '../data/modules';
 interface Props { module: Module }
 const { module } = Astro.props;
-const interactive = ['morse', 'password', 'complicated', 'keypad', 'sequences'].includes(module.widget ?? '');
+const interactive = ['morse', 'password', 'complicated', 'keypad', 'sequences', 'maze'].includes(module.widget ?? '');
 ---
 <a class="card" href={`/modules/${module.slug}`}>
   <span class="zh">{module.name}</span>

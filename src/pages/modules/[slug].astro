@@ -6,6 +6,7 @@ import MorseSolver from '../../components/MorseSolver.astro';
 import PasswordSolver from '../../components/PasswordSolver.astro';
 import ComplicatedWiresSolver from '../../components/ComplicatedWiresSolver.astro';
 import WireSequencesSolver from '../../components/WireSequencesSolver.astro';
+import MazeSolver from '../../components/MazeSolver.astro';
 import { MODULES, CHAPTER_LABELS } from '../../data/modules';
 
 export function getStaticPaths() {
@@ -14,7 +15,7 @@ export function getStaticPaths() {
 
 const { module } = Astro.props;
 const w = module.widget;
-const isSolver = w === 'morse' || w === 'password' || w === 'complicated' || w === 'keypad' || w === 'sequences';
+const isSolver = w === 'morse' || w === 'password' || w === 'complicated' || w === 'keypad' || w === 'sequences' || w === 'maze';
 ---
 <Manual title={`${module.name} · 拆弹手册`} active={module.slug}>
   <article class="module">
@@ -29,10 +30,12 @@ const isSolver = w === 'morse' || w === 'password' || w === 'complicated' || w =
         {w === 'complicated' && <ComplicatedWiresSolver />}
         {w === 'sequences' && <WireSequencesSolver />}
         {w === 'keypad' && <KeypadSolver />}
+        {w === 'maze' && <MazeSolver />}
         <details class="manual-fold">
           <summary>📖 查看完整手册说明</summary>
           <div class="body" set:html={module.body} />
           {w === 'keypad' && <Keypad />}
+          {w === 'maze' && <img class="maze-img" src="/assets/maze.png" alt="九张迷宫图" />}
         </details>
       </Fragment>
     ) : (

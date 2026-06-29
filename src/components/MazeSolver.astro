@@ -1,0 +1,177 @@
+---
+// 迷宫交互解算器：① 点两个绿圈识别迷宫 → ② 点白色光点起点 → ③ 点红色三角终点 → 自动给出路线
+---
+<div class="solver" id="mz-solver">
+  <h3>🧭 迷宫解算器</h3>
+
+  <div class="mz-modes" id="mz-modes">
+    <button class="mz-mode on" data-mode="circle">① 绿圈 <span class="mz-count" id="mz-cc">0/2</span></button>
+    <button class="mz-mode" data-mode="start" disabled>② 起点（白点）</button>
+    <button class="mz-mode" data-mode="goal" disabled>③ 终点（红三角）</button>
+  </div>
+  <div class="mz-hint" id="mz-hint">点选模块上两个绿色圆圈所在的格子。</div>
+
+  <div class="mz-grid" id="mz-grid"></div>
+
+  <div class="btn-row"><button class="btn ghost" id="mz-reset">↺ 重置</button></div>
+
+  <label>路线</label>
+  <div class="mz-answer" id="mz-answer"><div class="empty">识别迷宫并设置起点/终点后，自动给出最短路线。</div></div>
+</div>
+
+<script>
+  import { MAZES, findMaze, solveMaze, type Maze } from '../data/maze';
+
+  const root = document.getElementById('mz-solver')!;
+  const gridEl = root.querySelector<HTMLElement>('#mz-grid')!;
+  const hintEl = root.querySelector<HTMLElement>('#mz-hint')!;
+  const ansEl = root.querySelector<HTMLElement>('#mz-answer')!;
+  const ccEl = root.querySelector<HTMLElement>('#mz-cc')!;
+  const modeBtns = Array.from(root.querySelectorAll<HTMLButtonElement>('.mz-mode'));
+
+  type Mode = 'circle' | 'start' | 'goal';
+  type Cell = [number, number];
+  const eq = (a: Cell, b: Cell) => a[0] === b[0] && a[1] === b[1];
+
+  let mode: Mode = 'circle';
+  let circles: Cell[] = [];
+  let mazeIdx = -1;
+  let start: Cell | null = null;
+  let goal: Cell | null = null;
+
+  // 建格子
+  const cells: HTMLButtonElement[][] = [];
+  for (let y = 0; y < 6; y++) {
+    const rowArr: HTMLButtonElement[] = [];
+    for (let x = 0; x < 6; x++) {
+      const b = document.createElement('button');
+      b.className = 'mz-cell';
+      b.dataset.x = String(x);
+      b.dataset.y = String(y);
+      b.addEventListener('click', () => onClick(x, y));
+      gridEl.appendChild(b);
+      rowArr.push(b);
+    }
+    cells.push(rowArr);
+  }
+
+  function setMode(m: Mode) {
+    mode = m;
+    modeBtns.forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
+  }
+
+  function onClick(x: number, y: number) {
+    const c: Cell = [x, y];
+    if (mode === 'circle') {
+      const i = circles.findIndex((p) => eq(p, c));
+      if (i >= 0) circles.splice(i, 1);
+      else if (circles.length < 2) circles.push(c);
+      // 圆圈变动会让已锁定迷宫失效
+      mazeIdx = -1;
+      if (circles.length === 2) {
+        mazeIdx = findMaze(circles[0], circles[1]);
+        if (mazeIdx >= 0) {
+          modeBtns.forEach((b) => (b.disabled = false));
+          setMode('start');
+        } else {
+          start = null; goal = null;
+          modeBtns.forEach((b) => { if (b.dataset.mode !== 'circle') b.disabled = true; });
+          setMode('circle');
+        }
+      } else {
+        modeBtns.forEach((b) => { if (b.dataset.mode !== 'circle') b.disabled = true; });
+      }
+    } else if (mode === 'start') {
+      start = goal && eq(goal, c) ? start : c;
+      if (goal && eq(goal, c)) goal = null;
+      setMode('goal');
+    } else {
+      goal = start && eq(start, c) ? goal : c;
+      if (start && eq(start, c)) start = null;
+    }
+    render();
+  }
+
+  function render() {
+    ccEl.textContent = `${circles.length}/2`;
+    const maze: Maze | null = mazeIdx >= 0 ? MAZES[mazeIdx] : null;
+
+    // 路径
+    let path: ('U' | 'D' | 'L' | 'R')[] | null = null;
+    const onPath = new Set<string>();
+    if (maze && start && goal) {
+      path = solveMaze(maze, start, goal);
+      if (path) {
+        let cx = start[0], cy = start[1];
+        onPath.add(`${cx},${cy}`);
+        const d = { U: [0, -1], D: [0, 1], L: [-1, 0], R: [1, 0] } as const;
+        for (const s of path) { cx += d[s][0]; cy += d[s][1]; onPath.add(`${cx},${cy}`); }
+      }
+    }
+
+    for (let y = 0; y < 6; y++) {
+      for (let x = 0; x < 6; x++) {
+        const b = cells[y][x];
+        b.className = 'mz-cell';
+        // 墙体
+        if (maze) {
+          if (x < 5 && maze.v[x][y]) b.classList.add('wr');
+          if (y < 5 && maze.h[x][y]) b.classList.add('wb');
+        }
+        const c: Cell = [x, y];
+        if (circles.some((p) => eq(p, c))) b.classList.add('mk-circle');
+        if (start && eq(start, c)) b.classList.add('mk-start');
+        if (goal && eq(goal, c)) b.classList.add('mk-goal');
+        if (onPath.has(`${x},${y}`)) b.classList.add('on-path');
+        b.innerHTML =
+          (start && eq(start, c)) ? '<span class="g start">●</span>' :
+          (goal && eq(goal, c)) ? '<span class="g goal">▲</span>' :
+          (circles.some((p) => eq(p, c))) ? '<span class="g circ">◎</span>' : '';
+      }
+    }
+    gridEl.classList.toggle('locked', !!maze);
+
+    // 提示 + 答案
+    if (circles.length < 2) {
+      hintEl.textContent = '点选模块上两个绿色圆圈所在的格子。';
+    } else if (mazeIdx < 0) {
+      hintEl.textContent = '⚠️ 这两个圆圈不匹配任何迷宫，请检查位置。';
+    } else if (!start) {
+      hintEl.textContent = `已锁定第 ${mazeIdx + 1} 号迷宫。现在点选白色光点（起点）。`;
+    } else if (!goal) {
+      hintEl.textContent = '点选红色三角（终点）。';
+    } else {
+      hintEl.textContent = `第 ${mazeIdx + 1} 号迷宫 · 按下方箭头依次移动。`;
+    }
+
+    if (!maze || !start || !goal) {
+      ansEl.innerHTML = '<div class="empty">识别迷宫并设置起点/终点后，自动给出最短路线。</div>';
+      return;
+    }
+    if (!path) {
+      ansEl.innerHTML = '<div class="empty">⚠️ 起点与终点之间无通路（请检查输入）。</div>';
+      return;
+    }
+    if (path.length === 0) {
+      ansEl.innerHTML = '<div class="empty">起点即终点，无需移动。</div>';
+      return;
+    }
+    const label = { U: ['↑', '上'], D: ['↓', '下'], L: ['←', '左'], R: ['→', '右'] } as const;
+    ansEl.innerHTML = path
+      .map((s, i) => `<span class="mz-step"><b>${label[s][0]}</b>${label[s][1]}${i < path!.length - 1 ? '' : ''}</span>`)
+      .join('<span class="mz-arrow">·</span>');
+  }
+
+  root.querySelector('#mz-reset')!.addEventListener('click', () => {
+    circles = []; mazeIdx = -1; start = null; goal = null;
+    modeBtns.forEach((b) => { if (b.dataset.mode !== 'circle') b.disabled = true; });
+    setMode('circle');
+    render();
+  });
+
+  modeBtns.forEach((b) =>
+    b.addEventListener('click', () => { if (!b.disabled) setMode(b.dataset.mode as Mode); }),
+  );
+
+  render();
+</script>
