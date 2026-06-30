@@ -1,0 +1,108 @@
+---
+// 全局炸弹状态面板：填一次，全炸弹通用并保留，直到顶部「重置」清空。
+import { INDICATOR_LABELS, PORT_LABELS } from '../scripts/bombState';
+---
+<details class="bombstate" id="bombstate">
+  <summary>
+    <span class="bs-title">🧰 炸弹全局状态</span>
+    <span class="bs-summary" id="bs-summary">未填写</span>
+  </summary>
+  <div class="bs-body">
+    <p class="bs-note">这些数据全炸弹通用，填写后会<b>保留</b>并自动带入各模块解算器，直到点击右上角「<b>↺ 重置</b>」清空。</p>
+
+    <div class="bs-grid">
+      <div class="bs-field">
+        <label for="bs-serial">序列号</label>
+        <input type="text" id="bs-serial" placeholder="如 AB4C9" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+        <div class="bs-derived" id="bs-serial-derived"></div>
+      </div>
+      <div class="bs-field">
+        <label>电池数量</label>
+        <div class="bs-stepper">
+          <button class="btn step" id="bs-batt-dec" type="button" aria-label="减少电池">−</button>
+          <b class="bs-batt-n" id="bs-batt-n">0</b>
+          <button class="btn step" id="bs-batt-inc" type="button" aria-label="增加电池">＋</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bs-field">
+      <label>已点亮指示灯</label>
+      <div class="toggle-row" id="bs-indicators">
+        {INDICATOR_LABELS.map((l) => (
+          <button class="toggle mono" type="button" data-ind={l}>{l}</button>
+        ))}
+      </div>
+    </div>
+
+    <div class="bs-field">
+      <label>存在的端口</label>
+      <div class="toggle-row" id="bs-ports">
+        {PORT_LABELS.map((l) => (
+          <button class="toggle mono" type="button" data-port={l}>{l}</button>
+        ))}
+      </div>
+    </div>
+  </div>
+</details>
+
+<script>
+  import { getBombState, setBombState, onBombStateChange, serialHasVowel, serialLastDigitEven, type BombState } from '../scripts/bombState';
+
+  const root = document.getElementById('bombstate')!;
+  const serialEl = root.querySelector<HTMLInputElement>('#bs-serial')!;
+  const serialDeriv = root.querySelector<HTMLElement>('#bs-serial-derived')!;
+  const battN = root.querySelector<HTMLElement>('#bs-batt-n')!;
+  const indWrap = root.querySelector<HTMLElement>('#bs-indicators')!;
+  const portWrap = root.querySelector<HTMLElement>('#bs-ports')!;
+  const summary = root.querySelector<HTMLElement>('#bs-summary')!;
+
+  function paint(s: BombState) {
+    // 输入框获焦时不回写，避免打断输入 / 光标跳动
+    if (document.activeElement !== serialEl) serialEl.value = s.serial;
+    battN.textContent = String(s.batteries);
+    indWrap.querySelectorAll<HTMLButtonElement>('[data-ind]').forEach((b) =>
+      b.classList.toggle('on', s.indicators.includes(b.dataset.ind!)));
+    portWrap.querySelectorAll<HTMLButtonElement>('[data-port]').forEach((b) =>
+      b.classList.toggle('on', s.ports.includes(b.dataset.port!)));
+
+    if (s.serial.trim()) {
+      const vowel = serialHasVowel(s);
+      const even = serialLastDigitEven(s);
+      serialDeriv.innerHTML =
+        `含元音 <b class="${vowel ? 'yes' : 'no'}">${vowel ? '是' : '否'}</b> · ` +
+        `末位 <b>${even === null ? '？' : even ? '偶' : '奇'}</b>`;
+    } else {
+      serialDeriv.textContent = '';
+    }
+
+    const parts: string[] = [];
+    if (s.serial.trim()) parts.push(s.serial);
+    if (s.batteries) parts.push(`${s.batteries} 电池`);
+    if (s.indicators.length) parts.push(`灯 ${s.indicators.join('/')}`);
+    if (s.ports.length) parts.push(`口 ${s.ports.join('/')}`);
+    summary.textContent = parts.length ? parts.join(' · ') : '未填写';
+  }
+
+  serialEl.addEventListener('input', () => setBombState({ serial: serialEl.value }));
+  root.querySelector('#bs-batt-inc')!.addEventListener('click', () =>
+    setBombState({ batteries: Math.min(20, getBombState().batteries + 1) }));
+  root.querySelector('#bs-batt-dec')!.addEventListener('click', () =>
+    setBombState({ batteries: Math.max(0, getBombState().batteries - 1) }));
+
+  indWrap.querySelectorAll<HTMLButtonElement>('[data-ind]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const cur = getBombState().indicators;
+      const l = b.dataset.ind!;
+      setBombState({ indicators: cur.includes(l) ? cur.filter((x) => x !== l) : [...cur, l] });
+    }));
+  portWrap.querySelectorAll<HTMLButtonElement>('[data-port]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const cur = getBombState().ports;
+      const l = b.dataset.port!;
+      setBombState({ ports: cur.includes(l) ? cur.filter((x) => x !== l) : [...cur, l] });
+    }));
+
+  onBombStateChange(paint);
+  paint(getBombState());
+</script>

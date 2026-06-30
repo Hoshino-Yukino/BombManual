@@ -271,3 +271,57 @@ kbd { font-family: ui-monospace, Menlo, monospace; font-size: .85em; background:
 .morse-ref b { color: var(--chip-yellow); }
 
 .site-footer { max-width: var(--max); margin: 24px auto; padding: 16px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); text-align: center; }
+
+/* ---------- 顶栏右侧操作 + 重置 ---------- */
+.bar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.bar-actions .nav-toggle { margin-left: 0; }
+.reset-btn {
+  background: var(--bg-3); color: var(--text); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 12px; font-size: 14px; cursor: pointer;
+  transition: border-color .12s, background .12s, color .12s;
+}
+.reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+.reset-btn.done { border-color: var(--accent-2); color: var(--accent-2); }
+
+/* ---------- 全局炸弹状态面板 ---------- */
+.subbar { max-width: var(--max); margin: 12px auto 0; padding: 0 16px; }
+.bombstate { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--radius); }
+.bombstate > summary {
+  cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; flex-wrap: wrap;
+}
+.bombstate > summary::-webkit-details-marker { display: none; }
+.bombstate > summary::after { content: '▸'; margin-left: auto; color: var(--muted); transition: transform .15s; }
+.bombstate[open] > summary::after { transform: rotate(90deg); }
+.bs-title { font-weight: 700; }
+.bs-summary { color: var(--muted); font-size: 13px; }
+.bs-body { padding: 0 14px 14px; border-top: 1px solid var(--line); margin-top: 2px; padding-top: 12px; }
+.bs-note { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+.bs-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 12px; }
+@media (min-width: 560px) { .bs-grid { grid-template-columns: 2fr 1fr; align-items: start; } }
+.bs-field { margin-bottom: 10px; }
+.bs-field > label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.bs-field input[type=text] {
+  width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px 12px; font-size: 16px;
+  font-family: ui-monospace, Menlo, monospace; letter-spacing: .1em; text-transform: uppercase;
+}
+.bs-field input:focus { outline: 2px solid var(--accent-2); border-color: var(--accent-2); }
+.bs-derived { font-size: 13px; color: var(--muted); margin-top: 6px; min-height: 18px; }
+.bs-derived b { color: var(--text); }
+.bs-derived b.yes { color: var(--accent-2); }
+.bs-derived b.no { color: var(--muted); }
+.bs-stepper { display: inline-flex; align-items: center; gap: 10px; }
+.bs-stepper .step { min-width: 42px; font-size: 20px; padding: 4px 0; }
+.bs-batt-n { font-size: 22px; min-width: 1.6em; text-align: center; font-variant-numeric: tabular-nums; }
+.toggle.mono { font-family: ui-monospace, Menlo, monospace; letter-spacing: .04em; font-size: 14px; padding: 6px 11px; }
+
+/* 复杂线路：全局炸弹状态回显 */
+.cw-bomb { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 8px; }
+.cw-stat {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-2); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 14px;
+}
+.cw-stat-k { color: var(--muted); }
+.cw-stat b { color: var(--text); font-variant-numeric: tabular-nums; }
+.cw-bomb-hint { color: var(--muted); font-size: 13px; margin: 0 0 8px; }

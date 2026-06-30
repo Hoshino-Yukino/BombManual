@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { MODULES, CHAPTER_LABELS, type Chapter } from '../data/modules';
+import BombState from '../components/BombState.astro';
 
 interface Props {
   title: string;
@@ -27,9 +28,16 @@ const chapters: Chapter[] = ['ch1', 'ch2', 'appendix'];
           <span class="dot"></span>
           <span>简单易懂拆弹手册 <small>KTANE · zh-CN</small></span>
         </a>
-        {withNav && <button class="nav-toggle" id="navToggle" aria-label="目录">☰ 目录</button>}
+        <div class="bar-actions">
+          <button class="reset-btn" id="bombReset" type="button" title="清空当前炸弹保留的全部数据（序列号 / 电池 / 指示灯 / 端口）">↺ 重置</button>
+          {withNav && <button class="nav-toggle" id="navToggle" aria-label="目录">☰ 目录</button>}
+        </div>
       </div>
     </header>
+
+    <div class="subbar">
+      <BombState />
+    </div>
 
     <div class={`layout ${withNav ? 'with-nav' : ''}`}>
       {withNav && (
@@ -54,11 +62,25 @@ const chapters: Chapter[] = ['ch1', 'ch2', 'appendix'];
     </footer>
 
     <script>
+      import { resetBombState } from '../scripts/bombState';
+
       const t = document.getElementById('navToggle');
       const n = document.getElementById('sidenav');
       t?.addEventListener('click', () => n?.classList.toggle('open'));
       n?.addEventListener('click', (e) => {
         if ((e.target as HTMLElement).tagName === 'A') n.classList.remove('open');
+      });
+
+      const resetBtn = document.getElementById('bombReset');
+      resetBtn?.addEventListener('click', () => {
+        resetBombState();
+        const orig = resetBtn.textContent;
+        resetBtn.textContent = '已重置 ✓';
+        resetBtn.classList.add('done');
+        setTimeout(() => {
+          resetBtn.textContent = orig;
+          resetBtn.classList.remove('done');
+        }, 1200);
       });
     </script>
   </body>

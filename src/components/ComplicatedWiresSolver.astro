@@ -12,53 +12,72 @@
     <button class="toggle" data-k="led">LED 点亮</button>
   </div>
 
-  <label>② 炸弹整体状态（决定 S / P / B 是否剪断）</label>
-  <div class="toggle-row">
-    <button class="toggle" data-k="serialEven">序列号末位偶数</button>
-    <button class="toggle" data-k="parallel">有 Parallel 端口</button>
-    <button class="toggle" data-k="batt2">≥2 个电池</button>
+  <label>② 炸弹整体状态（决定 S / P / B，取自顶部「🧰 炸弹全局状态」）</label>
+  <div class="cw-bomb" id="cw-bomb">
+    <span class="cw-stat"><span class="cw-stat-k">序列号末位</span><b data-stat="serial">—</b></span>
+    <span class="cw-stat"><span class="cw-stat-k">Parallel 端口</span><b data-stat="parallel">—</b></span>
+    <span class="cw-stat"><span class="cw-stat-k">电池数</span><b data-stat="batt">—</b></span>
   </div>
+  <p class="cw-bomb-hint">这些为全炸弹通用数据，请在<b>页面顶部</b>「🧰 炸弹全局状态」填写，填后自动保留。</p>
 
-  <div class="btn-row"><button class="btn ghost" id="cw-clear">↺ 一键清空</button></div>
+  <div class="btn-row"><button class="btn ghost" id="cw-clear">↺ 清空本条线特征</button></div>
   <div class="cw-result" id="cw-result"></div>
   <div class="cw-reason" id="cw-reason"></div>
 </div>
 
 <script>
   import { COMPLICATED } from '../data/complicated';
+  import { getBombState, onBombStateChange, serialLastDigitEven, hasPort, batteryCount, type BombState } from '../scripts/bombState';
 
   const root = document.getElementById('cw-solver')!;
   const resEl = root.querySelector<HTMLElement>('#cw-result')!;
   const reaEl = root.querySelector<HTMLElement>('#cw-reason')!;
-
-  const state: Record<string, boolean> = {
-    red: false, blue: false, star: false, led: false,
-    serialEven: false, parallel: false, batt2: false,
+  const statEls = {
+    serial: root.querySelector<HTMLElement>('[data-stat="serial"]')!,
+    parallel: root.querySelector<HTMLElement>('[data-stat="parallel"]')!,
+    batt: root.querySelector<HTMLElement>('[data-stat="batt"]')!,
   };
 
+  // 本条线自身特征（红/蓝/★/LED）— 局部，不进全局炸弹状态
+  const wire: Record<string, boolean> = { red: false, blue: false, star: false, led: false };
+  let bomb: BombState = getBombState();
+
   function render() {
-    const key = `${+state.red}${+state.blue}${+state.star}${+state.led}`;
+    // 全局炸弹状态回显
+    const even = serialLastDigitEven(bomb);
+    const parallel = hasPort(bomb, 'Parallel');
+    const batt2 = batteryCount(bomb) >= 2;
+    statEls.serial.textContent = even === null ? '—' : even ? '偶' : '奇';
+    statEls.parallel.textContent = bomb.ports.length ? (parallel ? '有' : '无') : '—';
+    statEls.batt.textContent = String(batteryCount(bomb));
+
+    const key = `${+wire.red}${+wire.blue}${+wire.star}${+wire.led}`;
     const instr = COMPLICATED[key];
-    let cut = false;
+    let cut: boolean | null = false;
     let reason = '';
     switch (instr) {
       case 'C': cut = true; reason = 'C — 直接剪断'; break;
       case 'D': cut = false; reason = 'D — 不要剪断'; break;
       case 'S':
-        cut = state.serialEven;
-        reason = `S — 序列号末位${state.serialEven ? '为偶数 → 剪断' : '为奇数 → 不剪'}`;
+        if (even === null) { cut = null; reason = 'S — 需在顶部填写序列号（看末位奇偶）'; }
+        else { cut = even; reason = `S — 序列号末位${even ? '为偶数 → 剪断' : '为奇数 → 不剪'}`; }
         break;
       case 'P':
-        cut = state.parallel;
-        reason = `P — ${state.parallel ? '有 Parallel 端口 → 剪断' : '无 Parallel 端口 → 不剪'}`;
+        cut = parallel;
+        reason = `P — ${parallel ? '有 Parallel 端口 → 剪断' : '无 Parallel 端口 → 不剪（如未填端口请在顶部勾选）'}`;
         break;
       case 'B':
-        cut = state.batt2;
-        reason = `B — ${state.batt2 ? '电池 ≥2 → 剪断' : '电池 <2 → 不剪'}`;
+        cut = batt2;
+        reason = `B — ${batt2 ? '电池 ≥2 → 剪断' : '电池 <2 → 不剪'}`;
         break;
     }
-    resEl.textContent = cut ? '✂️ 剪断' : '✋ 不要剪断';
-    resEl.className = `cw-result ${cut ? 'cut' : 'keep'}`;
+    if (cut === null) {
+      resEl.textContent = '❓ 待补充';
+      resEl.className = 'cw-result';
+    } else {
+      resEl.textContent = cut ? '✂️ 剪断' : '✋ 不要剪断';
+      resEl.className = `cw-result ${cut ? 'cut' : 'keep'}`;
+    }
     reaEl.textContent = `指令 ${reason}`;
   }
 
@@ -66,17 +85,20 @@
   toggles.forEach((b) =>
     b.addEventListener('click', () => {
       const k = b.dataset.k!;
-      state[k] = !state[k];
-      b.classList.toggle('on', state[k]);
+      wire[k] = !wire[k];
+      b.classList.toggle('on', wire[k]);
       render();
     }),
   );
 
   root.querySelector('#cw-clear')!.addEventListener('click', () => {
-    for (const k in state) state[k] = false;
+    for (const k in wire) wire[k] = false;
     toggles.forEach((b) => b.classList.remove('on'));
     render();
   });
+
+  // 全局炸弹状态变化（含重置、跨标签页）时刷新
+  onBombStateChange((s) => { bomb = s; render(); });
 
   render();
 </script>
